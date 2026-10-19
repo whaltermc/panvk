@@ -2450,8 +2450,10 @@ nir_build_addr_iadd(nir_builder *b, nir_def *addr,
          fprintf(stderr,
                  "=== KBASE-DIAG: 62bit_generic addr with %u bits in shader %s ===\n",
                  addr->bit_size, b->shader->info.name);
-         fprintf(stderr, "  offending addr = %%%u (%u bits)\n",
-                 addr->index, addr->bit_size);
+         fprintf(stderr, "  offending addr has %u bits; produced by: ",
+                 addr->bit_size);
+         nir_print_instr(nir_def_instr(addr), stderr);
+         fprintf(stderr, "  ---- shader %s ----\n", b->shader->info.name);
          nir_print_shader(b->shader, stderr);
          abort();
       }
