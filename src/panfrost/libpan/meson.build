@@ -12,12 +12,12 @@ libpan_shader_files = files(
 
 idep_libpan_per_arch = {}
 
-foreach ver : ['6', '7', '9', '10', '12', '13', '14']
+foreach ver : ['4', '5', '6', '7', '9', '10', '12', '13', '14']
   libpan_spv = custom_target(
     input : libpan_shader_files,
     output : 'libpan_v' + ver + '.spv',
     command : [
-        prog_mesa_clc, '-o', '@OUTPUT@',  '--depfile', '@DEPFILE@',
+        prog_mesa_clc, '-o', '@OUTPUT@', '--depfile', '@DEPFILE@',
         libpan_shader_files, '--',
         '-DPAN_ARCH=@0@'.format(ver),
         '-I' + join_paths(meson.project_source_root(), 'include'),
