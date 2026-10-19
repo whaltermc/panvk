@@ -19,6 +19,11 @@ jobs:
       ARTIFACT_NAME: mesa-panvk-kbase-debug-aarch64
       BUILD_DIR: build
       INSTALL_PREFIX: /opt/mesa
+      # Mesa's SPIRV-Tools feature probe (src/compiler/clc/meson.build) passes
+      # Clang-only warning flags; GCC rejects them and the probe fails. Build
+      # with Clang so the probe tests the API instead of the compiler flags.
+      CC: clang
+      CXX: clang++
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,6 +36,7 @@ jobs:
             bison \
             build-essential \
             ca-certificates \
+            clang \
             flex \
             libdrm-dev \
             libelf-dev \
