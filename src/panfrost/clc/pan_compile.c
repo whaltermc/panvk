@@ -154,22 +154,26 @@ compile(void *memctx, const uint32_t *spirv, size_t spirv_size, unsigned arch)
             nir_address_format_32bit_offset_as_64bit);
 
    /* The per-variant precompiled shaders are built as MESA_SHADER_COMPUTE, for
-    * which nir_get_ptr_bitsize() reports 32-bit pointers.  Splitting
-    * function_temp structs there would create 32-bit derefs in a shader that is
-    * later lowered with nir_address_format_62bit_generic (64-bit) and trip an
-    * assert in nir_lower_explicit_io.  Run the optimizer here, while the
-    * library is still a kernel and pointers are known to be 64-bit, so that
-    * structs are split (and variable copies lowered) before the variant is
-    * built.
+    * which nir_get_ptr_bitsize() reports 32-bit pointers.  If function_temp
+    * structs were split there, the new derefs would be 32-bit while
+    * nir_lower_explicit_io later lowers them with nir_address_format_62bit_generic
+    * (64-bit), tripping an assert.  Run the same pre-optimize sequence as the
+    * per-variant path here, while the library is still a kernel and pointers
+    * are known to be 64-bit, so that the structs are already split before the
+    * variant is built.
     */
-   optimize(nir);
+   NIR_PASS(_, nir, nir_opt_deref);
+   NIR_PASS(_, nir, nir_lower_vars_to_ssa);
+   NIR_PASS(_, nir, nir_remove_dead_derefs);
+   NIR_PASS(_, nir, nir_remove_dead_variables,
+            nir_var_function_temp | nir_var_shader_temp, NULL);
 
-   nir_foreach_function_impl(impl, nir) {
-      nir_foreach_variable_in_list(var, &impl->locals) {
-         if (var->name && strstr(var->name, "TessFactorCtx"))
-            fprintf(stderr, "PAN-COMPILE library local var: %s\n", var->name);
-      }
-   }
+   NIR_PASS(_, nir, nir_lower_vars_to_explicit_types,
+            nir_var_shader_temp | nir_var_function_temp |
+               nir_var_mem_shared | nir_var_mem_global,
+            glsl_get_cl_type_size_align);
+
+   optimize(nir);
 
    return nir;
 }
