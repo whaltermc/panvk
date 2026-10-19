@@ -444,8 +444,6 @@ main(int argc, const char **argv)
           * different address formats inside shaders */
          NIR_PASS(_, s, nir_opt_deref);
          NIR_PASS(_, s, nir_lower_vars_to_ssa);
-         fprintf(stderr, "PAN-COMPILE %s v%u arch %u: lower_explicit_io #1\n",
-                 libfunc->name, v, target_arch);
          NIR_PASS(_, s, nir_lower_explicit_io,
                   nir_var_shader_temp | nir_var_function_temp |
                      nir_var_mem_shared | nir_var_mem_global,
@@ -464,8 +462,6 @@ main(int argc, const char **argv)
 
          NIR_PASS(_, s, nir_opt_deref);
          NIR_PASS(_, s, nir_lower_vars_to_ssa);
-         fprintf(stderr, "PAN-COMPILE %s v%u arch %u: lower_explicit_io #2\n",
-                 libfunc->name, v, target_arch);
          NIR_PASS(_, s, nir_lower_explicit_io,
                   nir_var_shader_temp | nir_var_function_temp |
                      nir_var_mem_shared | nir_var_mem_global,
