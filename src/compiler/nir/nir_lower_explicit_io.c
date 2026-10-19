@@ -2452,12 +2452,7 @@ nir_build_addr_iadd(nir_builder *b, nir_def *addr,
                  addr->bit_size, b->shader->info.name);
          fprintf(stderr, "  offending addr = %%%u (%u bits)\n",
                  addr->index, addr->bit_size);
-         if (addr->parent_instr) {
-            fprintf(stderr, "  produced by: ");
-            nir_print_instr(addr->parent_instr, stderr);
-         } else {
-            fprintf(stderr, "  (no parent instruction)\n");
-         }
+         nir_print_shader(b->shader, stderr);
          abort();
       }
       assert(addr->num_components == 1);
