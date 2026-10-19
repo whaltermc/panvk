@@ -157,12 +157,19 @@ compile(void *memctx, const uint32_t *spirv, size_t spirv_size, unsigned arch)
     * which nir_get_ptr_bitsize() reports 32-bit pointers.  Splitting
     * function_temp structs there would create 32-bit derefs in a shader that is
     * later lowered with nir_address_format_62bit_generic (64-bit) and trip an
-    * assert in nir_lower_explicit_io.  Split them here, while the library is
-    * still a kernel and pointers are known to be 64-bit.
+    * assert in nir_lower_explicit_io.  Run the optimizer here, while the
+    * library is still a kernel and pointers are known to be 64-bit, so that
+    * structs are split (and variable copies lowered) before the variant is
+    * built.
     */
-   NIR_PASS(_, nir, nir_opt_deref);
-   NIR_PASS(_, nir, nir_split_struct_vars,
-            nir_var_function_temp | nir_var_shader_temp);
+   optimize(nir);
+
+   nir_foreach_function_impl(impl, nir) {
+      nir_foreach_variable_in_list(var, &impl->locals) {
+         if (var->name && strstr(var->name, "TessFactorCtx"))
+            fprintf(stderr, "PAN-COMPILE library local var: %s\n", var->name);
+      }
+   }
 
    return nir;
 }
