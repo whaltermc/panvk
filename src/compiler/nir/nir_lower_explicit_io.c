@@ -21,6 +21,9 @@
  * IN THE SOFTWARE.
  */
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "nir.h"
 #include "nir_builder.h"
 #include "nir_deref.h"
@@ -2443,6 +2446,13 @@ nir_build_addr_iadd(nir_builder *b, nir_def *addr,
       return nir_vector_insert_imm(b, addr, nir_iadd(b, nir_channel(b, addr, 2), offset), 2);
 
    case nir_address_format_62bit_generic:
+      if (addr->bit_size != 64) {
+         fprintf(stderr,
+                 "=== KBASE-DIAG: 62bit_generic addr with %u bits in shader %s ===\n",
+                 addr->bit_size, b->shader->info.name);
+         nir_print_shader(b->shader, stderr);
+         abort();
+      }
       assert(addr->num_components == 1);
       assert(addr->bit_size == 64);
       assert(offset->bit_size == 64);
