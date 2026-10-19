@@ -2079,10 +2079,17 @@ bi_emit_intrinsic(bi_builder *b, nir_intrinsic_instr *instr)
       enum bi_lane_op lane_op = BI_LANE_OP_NONE;
       enum bi_subgroup subgroup =
          bi_subgroup_from_cluster_size(pan_subgroup_size(b->shader->arch));
-      bi_clper_i32_to(b, dst,
-                      bi_src_index(&instr->src[0]),
-                      bi_byte(bi_src_index(&instr->src[1]), 0),
-                      inactive_result, lane_op, subgroup);
+      if (b->shader->quirks & BIFROST_LIMITED_CLPER) {
+         bi_mov_i32_to(b, dst,
+                       bi_clper_old_i32(b,
+                                        bi_src_index(&instr->src[0]),
+                                        bi_byte(bi_src_index(&instr->src[1]), 0)));
+      } else {
+         bi_clper_i32_to(b, dst,
+                         bi_src_index(&instr->src[0]),
+                         bi_byte(bi_src_index(&instr->src[1]), 0),
+                         inactive_result, lane_op, subgroup);
+      }
       break;
    }
 
