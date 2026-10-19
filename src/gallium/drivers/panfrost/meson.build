@@ -99,9 +99,7 @@ foreach ver : panfrost_versions
     files_panfrost_vx += ['pan_csf.c']
   endif
 
-  if ver not in ['4', '5']
-    files_panfrost_vx += 'pan_precomp.c'
-  endif
+  files_panfrost_vx += 'pan_precomp.c'
 
   idep_libpan_vx = []
   if ver in idep_libpan_per_arch
